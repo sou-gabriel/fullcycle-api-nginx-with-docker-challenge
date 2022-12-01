@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql
+    container_name: mysql
+    restart: always
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - 3306:3306
+    networks:
+      - fullcycle-network
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: fullcycle
+  
+  node:
+    container_name: node
+    build: 
+      context: ./node
+    entrypoint: wait-for mysql:3306 -t 40 -- node index.js
+    volumes:
+      - ./node:/home/node/app
+    networks:
+      - fullcycle-network
+    ports:
+      - 3333:3333
+    depends_on:
+      - mysql
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    ports:
+      - 8080:80
+    networks:
+      - fullcycle-network
+    depends_on:
+      - node
+      - mysql
+
+networks:
+  fullcycle-network:
+    driver: bridge
