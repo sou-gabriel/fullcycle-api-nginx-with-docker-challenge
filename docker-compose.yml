@@ -4,9 +4,9 @@ services:
   node:
     container_name: node
     build: ./node
-    command: bash -c "npm install && npm run start"
     volumes:
       - ./node:/usr/src/app
+    entrypoint: "wait-for mysql:3306 -t 40 -- bash -c 'npm install && npm run start'"
     networks:
       - node-network
     ports:
